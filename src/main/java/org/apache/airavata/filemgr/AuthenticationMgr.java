@@ -20,47 +20,36 @@
 */
 package org.apache.airavata.filemgr;
 
-import org.apache.oltu.oauth2.client.URLConnectionClient;
-import org.apache.oltu.oauth2.client.request.OAuthBearerClientRequest;
-import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
-import org.apache.oltu.oauth2.client.response.OAuthResourceResponse;
-import org.apache.oltu.oauth2.common.OAuth;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class AuthenticationMgr {
     private final static Logger logger = LoggerFactory.getLogger(AuthenticationMgr.class);
 
-    String hostName = AiravataFileMgrProperties.getInstance().getIdpUrl();
-    String[] allowedUserRoles = AiravataFileMgrProperties.getInstance().getAuthorisedUserRoles();
+    private Connection connect = null;
+    private PreparedStatement preparedStatement = null;
+    private ResultSet resultSet = null;
 
-    public boolean authenticate(String username,String accessToken) throws AuthenticationException {
+    public boolean authenticate(String username,String password) throws AuthenticationException {
         try {
-            if(accessToken != null && !accessToken.isEmpty()){
-                OAuthClientRequest request = new OAuthBearerClientRequest(hostName + "/oauth2/userinfo?schema=openid").
-                        buildQueryMessage();
-                URLConnectionClient ucc = new URLConnectionClient();
-                request.setHeader("Authorization","Bearer "+accessToken);
-                org.apache.oltu.oauth2.client.OAuthClient oAuthClient = new org.apache.oltu.oauth2.client.OAuthClient(ucc);
-                OAuthResourceResponse resp = oAuthClient.resource(request, OAuth.HttpMethod.GET,
-                        OAuthResourceResponse.class);
-                ObjectMapper mapper = new ObjectMapper();
-                Map<String,String> profile = mapper.readValue(resp.getBody(), Map.class);
-                String[] userRoles = profile.get("roles").split(",");
-                for(String userRole : userRoles){
-                    for(String allowedRole : allowedUserRoles){
-                        if(username.equals(profile.get("sub")) &&  allowedRole.equals(userRole)){
-                            return true;
-                        }
-                    }
-                }
+            Class.forName("com.mysql.jdbc.Driver");
+            connect = DriverManager.getConnection(AiravataFileMgrProperties.getInstance().getGrichemMySQLUrl());
+            preparedStatement = connect.prepareStatement("select password from Users where userName=?");
+            preparedStatement.setString(1, username);
+            resultSet = preparedStatement.getResultSet();
+            if (resultSet.next()) {
+                String storedPassword = resultSet.getString("password");
+                return SHA1.encrypt(password).equals(storedPassword);
+            }else{
+                return false;
             }
         }catch (Exception ex){
             throw new AuthenticationException(ex);
         }
-        return false;
     }
 }

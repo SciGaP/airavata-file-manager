@@ -30,4 +30,5 @@ public class AiravataFileMgrConfig {
     public static final String IDP_URL = "idp.url";
     public static final String IDP_AUTHORISED_ROLES = "idp.authorised.roles";
     public static final String USER_DATA_ROOT = "user.data.root";
+    public static final java.lang.String GRIDCHEM_MYSQL_URL = "gridchem.mysql.url";
 }

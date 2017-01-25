@@ -65,7 +65,7 @@ public class AiravataFileMgr {
 
         sshd.setPublickeyAuthenticator(new PublickeyAuthenticator() {
             public boolean authenticate(String s, PublicKey publicKey, ServerSession serverSession) {
-                return true;
+                return false;
             }
         });
 

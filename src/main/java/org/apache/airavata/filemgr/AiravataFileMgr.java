@@ -24,6 +24,7 @@ import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.root.RootedFileSystemProvider;
 import org.apache.sshd.common.session.Session;
+import org.apache.sshd.common.util.buffer.Buffer;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
@@ -31,15 +32,20 @@ import org.apache.sshd.server.auth.pubkey.PublickeyAuthenticator;
 import org.apache.sshd.server.command.ScpCommandFactory;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
+import org.apache.sshd.server.subsystem.sftp.SftpSubsystem;
 import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.FileSystem;
+import java.nio.file.LinkOption;
 import java.security.PublicKey;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 public class AiravataFileMgr {
 
@@ -69,7 +75,92 @@ public class AiravataFileMgr {
             }
         });
 
-        sshd.setSubsystemFactories(Collections.<NamedFactory<Command>>singletonList(new SftpSubsystemFactory()));
+        sshd.setSubsystemFactories(Collections.<NamedFactory<Command>>singletonList(new SftpSubsystemFactory(){
+            public Command create() {
+                return new SftpSubsystem(this.getExecutorService(), this.isShutdownOnExit(), this.getUnsupportedAttributePolicy()){
+                    protected void doLink(Buffer buffer, int id) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doLink(int id, String targetPath, String linkPath, boolean symLink) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doSymLink(Buffer buffer, int id) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doSymLink(int id, String targetPath, String linkPath) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void createLink(int id, String targetPath, String linkPath, boolean symLink) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doRename(Buffer buffer, int id) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doRename(int id, String oldPath, String newPath, int flags) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doRename(int id, String oldPath, String newPath, Collection<CopyOption> opts) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doCopyData(Buffer buffer, int id) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doCopyData(int id, String readHandle, long readOffset, long readLength, String writeHandle, long writeOffset) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doCopyFile(Buffer buffer, int id) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doCopyFile(int id, String srcFile, String dstFile, boolean overwriteDestination) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doCopyFile(int id, String srcFile, String dstFile, Collection<CopyOption> opts) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doRemoveDirectory(Buffer buffer, int id) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doRemoveDirectory(int id, String path, LinkOption... options) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doMakeDirectory(Buffer buffer, int id) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doMakeDirectory(int id, String path, Map<String, ?> attrs, LinkOption... options) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doRemove(Buffer buffer, int id) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doWrite(Buffer buffer, int id) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+
+                    protected void doWrite(int id, String handle, long offset, int length, byte[] data, int doff, int remaining) throws IOException {
+                        throw new IOException("Operation not supported...!");
+                    }
+                };
+            }
+        }));
+
         sshd.setCommandFactory(new ScpCommandFactory());
         FileSystemFactory fileSystemFactory = new FileSystemFactory() {
             public FileSystem createFileSystem(Session session) throws IOException {

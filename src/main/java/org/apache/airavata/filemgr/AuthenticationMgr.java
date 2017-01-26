@@ -41,7 +41,7 @@ public class AuthenticationMgr {
             connect = DriverManager.getConnection(AiravataFileMgrProperties.getInstance().getGrichemMySQLUrl());
             preparedStatement = connect.prepareStatement("select password from Users where userName=?");
             preparedStatement.setString(1, username);
-            resultSet = preparedStatement.getResultSet();
+            resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 String storedPassword = resultSet.getString("password");
                 return SHA1.encrypt(password).equals(storedPassword);
